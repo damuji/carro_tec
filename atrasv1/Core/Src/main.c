@@ -59,12 +59,20 @@ static void MX_DAC_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_UART4_Init(void);
 /* USER CODE BEGIN PFP */
-
+uint8_t data[10];
 /* USER CODE END PFP */
-
+int pedal;
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  HAL_UART_Receive_IT(&huart4, data, 3);
+  if (data[0]==1){
+  pedal = 0;
+  pedal = (data[1]<<8)+data[2];
 
+  }
+}
 /* USER CODE END 0 */
 
 /**
@@ -100,7 +108,8 @@ int main(void)
   MX_TIM2_Init();
   MX_UART4_Init();
   /* USER CODE BEGIN 2 */
-
+  HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
+  HAL_UART_Receive_IT(&huart4, data, 3);
   /* USER CODE END 2 */
 
   /* Infinite loop */
