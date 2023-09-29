@@ -66,14 +66,17 @@ static void MX_ADC1_Init(void);
 /* USER CODE BEGIN 0 */
 int adc_val ;
 uint8_t datos[3] ;
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart){
+	 HAL_ADC_Start_IT(&hadc1);
+}
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
 	adc_val = HAL_ADC_GetValue(&hadc1);
 
 	 datos[0] = 1;
 	 datos[1] = (adc_val >> 8) ;
 	 datos[2] = adc_val ;
-	 HAL_UART_Transmit(&huart4, datos,3, 100);
-	 HAL_ADC_Start_IT(&hadc1);
+	 HAL_UART_Transmit_IT(&huart4, datos,3);
+
 
 
 }
