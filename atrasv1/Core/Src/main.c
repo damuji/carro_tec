@@ -66,10 +66,11 @@ int pedal;
 /* USER CODE BEGIN 0 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-  HAL_UART_Receive_IT(&huart4, data, 3);
+  int merged = (data[1]<<8)+data[2];
+	HAL_UART_Receive_IT(&huart4, data, 3);
   if (data[0]==1){
-  pedal = 0;
-  pedal = (data[1]<<8)+data[2];
+	  pedal = merged;
+
 
   }
 }
