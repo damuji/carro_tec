@@ -66,6 +66,7 @@ static void MX_ADC1_Init(void);
 /* USER CODE BEGIN 0 */
 int adc_val ;
 uint8_t datos[3] ;
+uint8_t Cambio = 0;
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart){
 	 HAL_ADC_Start_IT(&hadc1);
 }
@@ -82,8 +83,20 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
 }
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-    if(GPIO_Pin == GPIO_PIN_12);
-    if(GPIO_Pin == GPIO_PIN_12);
+    if(GPIO_Pin == GPIO_PIN_12)
+    {
+    	if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12) == 1 )Cambio = 1;
+    	else Cambio = 0;
+    }
+
+    if(GPIO_Pin == GPIO_PIN_13){
+    	if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13) == 1 )Cambio = 2;
+    	else Cambio = 0;
+    }
+    datos[0] = 2;
+    datos[1] = 0;
+    datos[2] = Cambio;
+
 }
 /* USER CODE END 0 */
 

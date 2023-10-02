@@ -62,6 +62,7 @@ static void MX_UART4_Init(void);
 uint8_t data[10];
 /* USER CODE END PFP */
 int pedal;
+uint8_t cambio = 0;
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
@@ -70,7 +71,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   if (data[0]==1){
   pedal = 0;
   pedal = (data[1]<<8)+data[2];
-
+  }
+  if(data[0]==2){
+	  cambio = data[2];
   }
 }
 /* USER CODE END 0 */
