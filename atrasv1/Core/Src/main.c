@@ -61,20 +61,22 @@ static void MX_UART4_Init(void);
 /* USER CODE BEGIN PFP */
 uint8_t data[10];
 /* USER CODE END PFP */
-int pedal;
-uint8_t cambio = 0;
+
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-  HAL_UART_Receive_IT(&huart4, data, 3);
+
   if (data[0]==1){
   pedal = 0;
   pedal = (data[1]<<8)+data[2];
   }
   if(data[0]==2){
 	  cambio = data[2];
+
+
   }
+  HAL_UART_Receive_IT(&huart4, data, 3);
 }
 /* USER CODE END 0 */
 
@@ -113,6 +115,12 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
   HAL_UART_Receive_IT(&huart4, data, 3);
+
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, 0);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 1);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, 1);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, 1);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -356,10 +364,10 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10, GPIO_PIN_SET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;

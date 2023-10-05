@@ -64,28 +64,35 @@ static void MX_ADC1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int adc_val ;
-uint8_t datos[3] ;
-uint8_t Cambio = 0;
-int dP;
+int adc_val =  0;
+uint8_t datos[3]  = {0,0,0}; // mailbox del uart
+uint8_t Cambio = 0; // valor del selecor PNRD
+int dP = 0;// derivada del pedal
+
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart){
-	 HAL_ADC_Start_IT(&hadc1);
+
+	HAL_ADC_Start_IT(&hadc1);// se inicia la conversion del ADC
 }
+
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
-	adc_val = HAL_ADC_GetValue(&hadc1);
-	if (dP == 0)dP = adc_val;
+	adc_val = HAL_ADC_GetValue(&hadc1); // se lee el valor del adc
+
+	if (dP == 0)dP = adc_val;// se ve si dP esta en cero
 	else{
-		if ((dP > adc_val)&&((dP-adc_val) > 10))dP = adc_val;
+		if ((dP > adc_val)&&((dP-adc_val) > 10))dP = adc_val; // si el cambio de adc es menor a un valor no se rescribe el valor del pedal
 		else if((dP < adc_val)&&((adc_val-dP) > 10))dP = adc_val;
 	}
-	 datos[0] = 1;
-	 datos[1] = (dP >> 8) ;
-	 datos[2] = dP ;
-	 HAL_UART_Transmit_IT(&huart4, datos,3);
+
+	 datos[0] = 1; // ID
+	 datos[1] = (dP >> 8) ; // se toma la parte alta del Int
+	 datos[2] = dP ;// se toma la parte baja del int
+
+	 HAL_UART_Transmit_IT(&huart4, datos,3);// se manda el mensaje por uart
 
 
 
 }
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     if(GPIO_Pin == GPIO_PIN_12)
@@ -140,7 +147,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 
-  HAL_ADC_Start_IT(&hadc1);
+  HAL_ADC_Start_IT(&hadc1);// se inicia la conversion de ADC
 
   /* USER CODE END 2 */
 
@@ -148,7 +155,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
+
+	/* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
   }
