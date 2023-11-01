@@ -64,52 +64,12 @@ static void MX_ADC1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int adc_val =  0;
-uint8_t datos[3]  = {0,0,0}; // mailbox del uart
-uint8_t Cambio = 0; // valor del selecor PNRD
-int dP = 0;// derivada del pedal
-
+int adc_val ;
+uint8_t datos[5] ;
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart){
-
-	HAL_ADC_Start_IT(&hadc1);// se inicia la conversion del ADC
+	 HAL_ADC_Start_IT(&hadc1);
 }
 
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
-	adc_val = HAL_ADC_GetValue(&hadc1); // se lee el valor del adc
-
-	if (dP == 0)dP = adc_val;// se ve si dP esta en cero
-	else{
-		if ((dP > adc_val)&&((dP-adc_val) > 10))dP = adc_val; // si el cambio de adc es menor a un valor no se rescribe el valor del pedal
-		else if((dP < adc_val)&&((adc_val-dP) > 10))dP = adc_val;
-	}
-
-	 datos[0] = 1; // ID
-	 datos[1] = (dP >> 8) ; // se toma la parte alta del Int
-	 datos[2] = dP ;// se toma la parte baja del int
-
-	 HAL_UART_Transmit_IT(&huart4, datos,3);// se manda el mensaje por uart
-
-
-
-}
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-    if(GPIO_Pin == GPIO_PIN_12)
-    {
-    	if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12) == 1 )Cambio = 1;
-    	else Cambio = 0;
-    }
-
-    if(GPIO_Pin == GPIO_PIN_13){
-    	if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13) == 1 )Cambio = 2;
-    	else Cambio = 0;
-    }
-    datos[0] = 2;
-    datos[1] = 0;
-    datos[2] = Cambio;
-
-}
 /* USER CODE END 0 */
 
 /**
@@ -147,7 +107,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 
-  HAL_ADC_Start_IT(&hadc1);// se inicia la conversion de ADC
+  HAL_ADC_Start_IT(&hadc1);
 
   /* USER CODE END 2 */
 
@@ -155,8 +115,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
-	/* USER CODE END WHILE */
+    /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
   }
@@ -397,21 +356,21 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
-  /*Configure GPIO pin : PB12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_12;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PB13 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13;
+  /*Configure GPIO pin : B1_Pin */
+  GPIO_InitStruct.Pin = B1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+  /*Configure GPIO pin : LD2_Pin */
+  GPIO_InitStruct.Pin = LD2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
