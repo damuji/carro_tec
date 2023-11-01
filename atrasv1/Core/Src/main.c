@@ -21,6 +21,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "app/uart/uart.h"
+#include "app/diferencial/diferencial.h"
+#include "app/timers/timers.h"
 
 /* USER CODE END Includes */
 
@@ -42,12 +45,18 @@
 /* Private variables ---------------------------------------------------------*/
 DAC_HandleTypeDef hdac;
 
+I2C_HandleTypeDef hi2c1;
+
 TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim10;
 
 UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+
+
+
 
 /* USER CODE END PV */
 
@@ -58,26 +67,22 @@ static void MX_USART2_UART_Init(void);
 static void MX_DAC_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_UART4_Init(void);
+static void MX_I2C1_Init(void);
+static void MX_TIM10_Init(void);
 /* USER CODE BEGIN PFP */
-uint8_t data[10];
+uint8_t data[10]; // uart mailbox
+char cambio = 0; // palancia de cambios
+
+
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-
-  if (data[0]==1){
-  pedal = 0;
-  pedal = (data[1]<<8)+data[2];
-  }
-  if(data[0]==2){
-	  cambio = data[2];
 
 
-  }
-  HAL_UART_Receive_IT(&huart4, data, 3);
-}
+
+
 /* USER CODE END 0 */
 
 /**
@@ -112,14 +117,22 @@ int main(void)
   MX_DAC_Init();
   MX_TIM2_Init();
   MX_UART4_Init();
+  MX_I2C1_Init();
+  MX_TIM10_Init();
   /* USER CODE BEGIN 2 */
   HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
+  HAL_DAC_Start(&hdac, DAC_CHANNEL_2);
+  HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
+  HAL_DAC_SetValue(&hdac, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
   HAL_UART_Receive_IT(&huart4, data, 3);
 
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, 0);
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 1);
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, 1);
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, 1);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_13, 1); // reversa y adelenate
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_14, 1); // control del driver
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, 1); // freno
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, 1); //libre
+
+  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_3);
+  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_4);
 
   /* USER CODE END 2 */
 
@@ -127,6 +140,37 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
+	  switch (cambio){
+	  	  	  case 0: // neutral
+	  	  		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_13, 1); // se apaga todos los reles, esto apaga los drivers
+	  	  		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_14, 1); //
+	  	  		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, 1); //
+	  	  		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, 1); // libre}
+	  	  		  HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
+	  	  		  HAL_DAC_SetValue(&hdac, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
+	  	  		  HAL_TIM_Base_Stop_IT(&htim10); // detiene PID
+	  	  		  break;
+	  	  	  case 1: // Adelante
+	  	  		 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_13,0); // se pone en forward
+	  	  		 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_14, 0); // se activa el driver
+	  	  		 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, 0); //  se desactiva el freno
+	  	  		 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, 1); // libre
+	  	  		 HAL_TIM_Base_Start_IT(&htim10);
+	  	  		  break;
+	  	  	  case 2: //Reversa
+	  	  		 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_13, 1); // se pone en reversa
+	  	  		 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_14, 0); // se activa el driver
+	  	  		 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, 0); //  se desactiva el freno
+	  	  		 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, 1); // libre
+	  	  		 HAL_TIM_Base_Stop_IT(&htim10); //detiene PID
+
+
+	  	  		 /*
+	  	  		  * falta implemenetar control del motor en reversa, lector de velocidad de los motores, ¿Can?, diferencial.
+	  	  		  */
+	  	  		break;
+	  	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -229,6 +273,40 @@ static void MX_DAC_Init(void)
 }
 
 /**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.ClockSpeed = 100000;
+  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
   * @brief TIM2 Initialization Function
   * @param None
   * @retval None
@@ -266,17 +344,48 @@ static void MX_TIM2_Init(void)
   sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
   sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
   sConfigIC.ICFilter = 0;
-  if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_1) != HAL_OK)
+  if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();
   }
-  if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_2) != HAL_OK)
+  if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_4) != HAL_OK)
   {
     Error_Handler();
   }
   /* USER CODE BEGIN TIM2_Init 2 */
 
   /* USER CODE END TIM2_Init 2 */
+
+}
+
+/**
+  * @brief TIM10 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM10_Init(void)
+{
+
+  /* USER CODE BEGIN TIM10_Init 0 */
+
+  /* USER CODE END TIM10_Init 0 */
+
+  /* USER CODE BEGIN TIM10_Init 1 */
+
+  /* USER CODE END TIM10_Init 1 */
+  htim10.Instance = TIM10;
+  htim10.Init.Prescaler = 8399;
+  htim10.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim10.Init.Period = 2500;
+  htim10.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim10.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim10) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM10_Init 2 */
+
+  /* USER CODE END TIM10_Init 2 */
 
 }
 
@@ -364,30 +473,24 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2|GPIO_PIN_3, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13|GPIO_PIN_14, GPIO_PIN_SET);
 
-  /*Configure GPIO pin : B1_Pin */
-  GPIO_InitStruct.Pin = B1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PC9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_9;
+  /*Configure GPIO pins : PC2 PC3 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_3;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA8 PA9 PA10 */
-  GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10;
+  /*Configure GPIO pins : PB13 PB14 */
+  GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
