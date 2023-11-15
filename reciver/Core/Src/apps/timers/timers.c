@@ -7,16 +7,20 @@
 #include "timers.h"
 #include "../variables/variables.h"
 
-extern TIM_HandleTypeDef htim6;
+extern TIM_HandleTypeDef htim10;
 extern UART_HandleTypeDef huart4;
+extern ADC_HandleTypeDef hadc1;
+extern ADC_HandleTypeDef hadc2;
+
+
 extern uint32_t valores[2];
 char selecionado =0;
 extern uint8_t datos[5];
 extern char flag;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){ // completar
-	if (htim == &htim6){
-		setPedal(valores[0]);
-		setVolante(valores[1]);
+	if (htim == &htim10){
+		setPedal(valores[1]);
+		setVolante(valores[0]);
 
 
 
@@ -49,13 +53,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){ // completar
 			break;
 		}
 		flag =0;
-		HAL_UART_Transmit_IT(&huart4, datos,5);
+		//HAL_UART_Transmit_IT(&huart4, datos,5);
 
 		}
-		HAL_TIM_Base_Start_IT(&htim6);
 
-
-
+		HAL_TIM_Base_Start_IT(&htim10);
+		HAL_ADC_Start_IT(&hadc1);
+		HAL_ADC_Start_IT(&hadc2);
 
 
 	}

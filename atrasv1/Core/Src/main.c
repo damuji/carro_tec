@@ -124,7 +124,7 @@ int main(void)
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 1); // se apaga todos los reles, esto apaga los drivers
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, 1);
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, 1); //
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, 1); // libre}
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, 1); // libre
   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_3);
   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_4);
 

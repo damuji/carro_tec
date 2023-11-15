@@ -22,7 +22,6 @@ C_DEPS :=
 
 # Every subdirectory with source files must be described here
 SUBDIRS := \
-Core/Src/apps/adc \
 Core/Src/apps/pid1 \
 Core/Src/apps/timers \
 Core/Src/apps/variables \

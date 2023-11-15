@@ -14,7 +14,6 @@ RM := rm -rf
 -include Core/Src/apps/variables/subdir.mk
 -include Core/Src/apps/timers/subdir.mk
 -include Core/Src/apps/pid1/subdir.mk
--include Core/Src/apps/adc/subdir.mk
 -include Core/Src/subdir.mk
 -include objects.mk
 
