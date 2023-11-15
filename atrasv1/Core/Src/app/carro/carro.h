@@ -18,4 +18,15 @@ void setPedal(int valor);
 int getAngulo();
 void setAngulo(int ang);
 
+
+
+
+
+void setSalidaDerecha(int valor);
+void setSalidaIzquierda(int valor);
+int getSalidaDerecha();
+int getSalidaIzquierda();
+
+
+
 #endif /* SRC_APP_CARRO_CARRO_H_ */

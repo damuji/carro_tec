@@ -11,6 +11,6 @@
 #include "../diferencial/diferencial.h"
 #include "stm32f4xx_hal.h"
 
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
+//void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim);
 #endif /* SRC_APP_TIMERS_TIMERS_H_ */

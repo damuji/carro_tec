@@ -23,7 +23,8 @@
 /* USER CODE BEGIN Includes */
 #include "app/uart/uart.h"
 #include "app/diferencial/diferencial.h"
-#include "app/timers/timers.h"
+//#include "app/timers/timers.h"
+#include "app/carro/carro.h"
 
 /* USER CODE END Includes */
 
@@ -45,8 +46,6 @@
 /* Private variables ---------------------------------------------------------*/
 DAC_HandleTypeDef hdac;
 
-I2C_HandleTypeDef hi2c1;
-
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim10;
 
@@ -54,9 +53,6 @@ UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
-
-
 
 /* USER CODE END PV */
 
@@ -67,11 +63,11 @@ static void MX_USART2_UART_Init(void);
 static void MX_DAC_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_UART4_Init(void);
-static void MX_I2C1_Init(void);
 static void MX_TIM10_Init(void);
 /* USER CODE BEGIN PFP */
 uint8_t data[10]; // uart mailbox
-char cambio = 0; // palancia de cambios
+int cambio = 0; // palancia de cambios
+int p, a, mo1, mo2; //para debugear
 
 
 
@@ -117,20 +113,18 @@ int main(void)
   MX_DAC_Init();
   MX_TIM2_Init();
   MX_UART4_Init();
-  MX_I2C1_Init();
   MX_TIM10_Init();
   /* USER CODE BEGIN 2 */
   HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
   HAL_DAC_Start(&hdac, DAC_CHANNEL_2);
   HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
   HAL_DAC_SetValue(&hdac, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
-  HAL_UART_Receive_IT(&huart4, data, 3);
+  HAL_UART_Receive_IT(&huart4, data, 1);
 
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_13, 1); // reversa y adelenate
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_14, 1); // control del driver
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, 1); // freno
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, 1); //libre
-
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 1); // se apaga todos los reles, esto apaga los drivers
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, 1);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, 1); //
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, 1); // libre}
   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_3);
   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_4);
 
@@ -143,26 +137,27 @@ int main(void)
 
 	  switch (cambio){
 	  	  	  case 0: // neutral
-	  	  		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_13, 1); // se apaga todos los reles, esto apaga los drivers
-	  	  		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_14, 1); //
-	  	  		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, 1); //
-	  	  		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, 1); // libre}
+	  	  		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 1); // se apaga todos los reles, esto apaga los drivers
+	  	  		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, 1); //
+	  	  		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, 1); //
+	  	  		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, 1); // libre}
 	  	  		  HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
 	  	  		  HAL_DAC_SetValue(&hdac, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
 	  	  		  HAL_TIM_Base_Stop_IT(&htim10); // detiene PID
+	  	  		  cambio =1;
 	  	  		  break;
 	  	  	  case 1: // Adelante
-	  	  		 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_13,0); // se pone en forward
-	  	  		 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_14, 0); // se activa el driver
-	  	  		 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, 0); //  se desactiva el freno
-	  	  		 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, 1); // libre
-	  	  		 HAL_TIM_Base_Start_IT(&htim10);
+	  	  		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 0); // se apaga todos los reles, esto apaga los drivers
+	  	  		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, 1); //
+	  	  		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, 0); //
+	  	  		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, 1);// libre
+	  	  		HAL_TIM_Base_Start_IT(&htim10);
 	  	  		  break;
 	  	  	  case 2: //Reversa
-	  	  		 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_13, 1); // se pone en reversa
-	  	  		 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_14, 0); // se activa el driver
-	  	  		 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, 0); //  se desactiva el freno
-	  	  		 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, 1); // libre
+	  	  		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 0); // se apaga todos los reles, esto apaga los drivers
+	  	  		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, 0); //
+	  	  		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, 0); //
+	  	  		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, 1); // libre
 	  	  		 HAL_TIM_Base_Stop_IT(&htim10); //detiene PID
 
 
@@ -171,6 +166,11 @@ int main(void)
 	  	  		  */
 	  	  		break;
 	  	  }
+
+	  mo1 = getSalidaDerecha();
+	  mo2 = getSalidaIzquierda();
+	  setAngulo(a);
+	  setPedal(p);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -269,40 +269,6 @@ static void MX_DAC_Init(void)
   /* USER CODE BEGIN DAC_Init 2 */
 
   /* USER CODE END DAC_Init 2 */
-
-}
-
-/**
-  * @brief I2C1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_I2C1_Init(void)
-{
-
-  /* USER CODE BEGIN I2C1_Init 0 */
-
-  /* USER CODE END I2C1_Init 0 */
-
-  /* USER CODE BEGIN I2C1_Init 1 */
-
-  /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 100000;
-  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C1_Init 2 */
-
-  /* USER CODE END I2C1_Init 2 */
 
 }
 
@@ -473,20 +439,30 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2|GPIO_PIN_3, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7|GPIO_PIN_9, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13|GPIO_PIN_14, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
 
-  /*Configure GPIO pins : PC2 PC3 */
-  GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_3;
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+
+  /*Configure GPIO pins : PA7 PA9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PC7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_7;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB13 PB14 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14;
+  /*Configure GPIO pin : PB6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

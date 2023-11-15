@@ -10,6 +10,7 @@
 double rps[2] = {0,0};
 int pedal = 0;
 int angulo = 0;
+int motor[2] = {0,0};
 
 //
 
@@ -44,4 +45,19 @@ int getAngulo(){
 
 void setAngulo(int ang){
 	angulo =  ang;
+}
+void setSalidaDerecha(int valor){
+	motor[0] = valor;
+}
+void setSalidaIzquierda(int valor){
+	motor[1] = valor;
+}
+
+int getSalidaDerecha()
+{
+	return motor[0];
+}
+int getSalidaIzquierda()
+{
+	return motor[1];
 }

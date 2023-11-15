@@ -5,15 +5,18 @@
  *      Author: damuj
  */
 #include "uart.h"
+#include "../carro/carro.h"
 
 
 char anterior = 0;
 char  sync = 0;
 int merged = 0;
+/*
+ * modificar todo esto
+ */
 extern uint8_t data[10];
-extern int pedal;
 extern char cambio;
-extern int angulo;
+
 
 extern UART_HandleTypeDef huart4;
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
@@ -36,15 +39,15 @@ if (sync == 0){
 		merged = (data[1]<<8)+data[2];
 
 		if (data[0]==1){
-			pedal = 0;
-			pedal = (data[1]<<8)+data[2];
+			setPedal((data[1]<<8)+data[2]);
+
 		  }
 		if(data[0]==2){
 			cambio = data[2];
 
 		}
 		if (data[0]==3){
-			angulo = (data[1]<<8)+data[2];
+			setAngulo((data[1]<<8)+data[2]);
 		}
 		sync = 0;
 		HAL_UART_Receive_IT(&huart4, data, 1);

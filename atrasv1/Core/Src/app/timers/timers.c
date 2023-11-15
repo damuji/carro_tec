@@ -10,16 +10,17 @@
 extern TIM_HandleTypeDef htim10;
 extern DAC_HandleTypeDef hdac;
 int timepoAnterior[2] = {0,0};
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){ // completar
 	if (htim == &htim10){
 
 		calVelcidad(); // se calcula la velocdiad deseada
-		calDiff(); // se calcula la
+		caldiff(); // se calcula la
 
 
 		// Calcular PID
-		HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
-		HAL_DAC_SetValue(&hdac, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
+		HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, getSalidaDerecha());
+		HAL_DAC_SetValue(&hdac, DAC_CHANNEL_2, DAC_ALIGN_12B_R, getSalidaIzquierda());
 		// Aplicar PID
 
 		// se reiniica el timer
@@ -28,6 +29,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){ // completar
 	}
 
 }
+
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim){ // tomando 28 pulsos por revolicion
 	int tiempo = 0;
 	int lapso = 0;

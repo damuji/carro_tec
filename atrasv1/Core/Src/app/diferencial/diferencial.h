@@ -10,5 +10,5 @@
 
 void calAngulo();
 void calVelcidad();
-int calDiff();
+void caldiff();
 #endif /* SRC_APP_UART_DIFERENCIAL_DIFERENCIAL_H_ */
