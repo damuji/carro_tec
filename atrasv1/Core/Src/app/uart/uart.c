@@ -24,8 +24,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 if (sync == 0){
 	if (data[0] == 'o'){
 		anterior = 'o';
+		HAL_UART_Receive_IT(&huart4, data, 1);
 	}
-	if ((data[0] == 'k') && anterior == 'o' ){
+	else if ((data[0] == 'k') && anterior == 'o' ){
 		sync = 1;
 		HAL_UART_Receive_IT(&huart4, data, 3);
 	}
@@ -38,15 +39,15 @@ if (sync == 0){
 	else{
 		merged = (data[1]<<8)+data[2];
 
-		if (data[0]==1){
+		if (data[0]==0){
 			setPedal((data[1]<<8)+data[2]);
 
 		  }
-		if(data[0]==2){
+		if(data[0]==1){
 			cambio = data[2];
 
 		}
-		if (data[0]==3){
+		if (data[0]==2){
 			setAngulo((data[1]<<8)+data[2]);
 		}
 		sync = 0;

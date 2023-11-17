@@ -121,12 +121,12 @@ int main(void)
   HAL_DAC_SetValue(&hdac, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
   HAL_UART_Receive_IT(&huart4, data, 1);
 
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 1); // se apaga todos los reles, esto apaga los drivers
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, 1);
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, 1); //
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, 1); // libre
-  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_3);
-  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_4);
+  //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET); // se apaga todos los reles, esto apaga los drivers
+  //HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
+  //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET); //
+  //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET); // libre
+  //HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_3);
+  //HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_4);
 
   /* USER CODE END 2 */
 
@@ -137,27 +137,28 @@ int main(void)
 
 	  switch (cambio){
 	  	  	  case 0: // neutral
-	  	  		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 1); // se apaga todos los reles, esto apaga los drivers
-	  	  		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, 1); //
-	  	  		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, 1); //
-	  	  		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, 1); // libre}
+	  	  		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET); // se apaga todos los reles, esto apaga los drivers
+	  	  		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); //
+	  	  		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET); //
+	  	  		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET); // libre}
 	  	  		  HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
 	  	  		  HAL_DAC_SetValue(&hdac, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
 	  	  		  HAL_TIM_Base_Stop_IT(&htim10); // detiene PID
-	  	  		  cambio =1;
+
 	  	  		  break;
 	  	  	  case 1: // Adelante
-	  	  		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 0); // se apaga todos los reles, esto apaga los drivers
-	  	  		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, 1); //
-	  	  		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, 0); //
-	  	  		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, 1);// libre
+
+	  	  		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET); // se apaga todos los reles, esto apaga los drivers
+	  	  		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); //
+	  	  		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET); //
+	  	  		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);// libre
 	  	  		HAL_TIM_Base_Start_IT(&htim10);
 	  	  		  break;
 	  	  	  case 2: //Reversa
-	  	  		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 0); // se apaga todos los reles, esto apaga los drivers
-	  	  		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, 0); //
-	  	  		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, 0); //
-	  	  		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, 1); // libre
+	  	  		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET); // se apaga todos los reles, esto apaga los drivers
+	  	  		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); //
+	  	  		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET); //
+	  	  		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET); // libre
 	  	  		 HAL_TIM_Base_Stop_IT(&htim10); //detiene PID
 
 
@@ -167,10 +168,7 @@ int main(void)
 	  	  		break;
 	  	  }
 
-	  mo1 = getSalidaDerecha();
-	  mo2 = getSalidaIzquierda();
-	  setAngulo(a);
-	  setPedal(p);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

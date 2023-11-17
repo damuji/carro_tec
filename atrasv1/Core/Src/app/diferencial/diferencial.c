@@ -21,7 +21,7 @@ void calAngulo(){
 void calVelcidad(){ // funcion para ligar la posicion del pedal a una velocidad, se tiene que ajustar despues
 	int temporal= 0;
 	int pedal = getPedal();
-	temporal = (pedal*1000)/4095;
+	temporal = ((pedal-1000)*1000)/2200;
 	velocidad =  (temporal*5)/10;
 }
 void normalizacion();

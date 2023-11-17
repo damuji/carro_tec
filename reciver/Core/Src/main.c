@@ -92,11 +92,11 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim){
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
   if (hadc==&hadc1){
-	  valores[0] = HAL_ADC_GetValue(&hadc1);
+	  setPedal(HAL_ADC_GetValue(&hadc1));
 
   }
-  if (hadc==&hadc1){
-	  valores[1] = HAL_ADC_GetValue(&hadc2);
+  if (hadc==&hadc2){
+	  setPedal(HAL_ADC_GetValue(&hadc2));
 
   }
   /*If continuousconversion mode is DISABLED uncomment below*/

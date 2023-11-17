@@ -19,10 +19,6 @@ extern uint8_t datos[5];
 extern char flag;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){ // completar
 	if (htim == &htim10){
-		setPedal(valores[1]);
-		setVolante(valores[0]);
-
-
 
 
 		if (flag){
@@ -53,7 +49,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){ // completar
 			break;
 		}
 		flag =0;
-		//HAL_UART_Transmit_IT(&huart4, datos,5);
+		HAL_UART_Transmit_IT(&huart4, datos,5);
 
 		}
 
