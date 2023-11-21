@@ -76,13 +76,53 @@ static void MX_ADC2_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 int adc_val ;
-uint8_t datos[5] ;
+uint8_t datos[10] ;
+uint8_t datoss[10] ;
 uint32_t valores[2] = {0,0};
 char flag =1;
+char selecionado =0;
+uint8_t data[10] ;
+
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart){
+
+	if(huart==&huart4){
+	datos[0] = 0;
+	datos[1] = (getPedal() >> 8) ;
+	datos[2] = getPedal() ;
+	datos[3] = getCambio();;
+	datos[4] = (getAngulo() >> 8);
+	datos[5] = (getAngulo() >> 8);
+	datos[6] = 10;
+	datos[7] = 13;
+	HAL_UART_Transmit_IT(&huart4, datos,8);
+
+}
+if(huart==&huart2){
+
+
+
 	flag =1;
 }
 
+}
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if(huart == &huart2){
+		if (data[0]==7 | data[0]=='7'){
+			setCambio(1);
+		}
+		else if (data[0]==8 | data[0]=='8'){
+			setCambio(0);
+		}
+		else if (data[0]==9 | data[0]=='9'){
+			setCambio(2);
+		}
+
+	HAL_UART_Receive_IT(&huart2, data, 1);
+	}
+
+
+}
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim){
 	 setAngulo(__HAL_TIM_GET_COUNTER(htim));
@@ -91,12 +131,12 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim){
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-  if (hadc==&hadc1){
-	  setPedal(HAL_ADC_GetValue(&hadc1));
+  if (hadc==&hadc2){
+	  setVolante(HAL_ADC_GetValue(&hadc2));
 
   }
-  if (hadc==&hadc2){
-	  setPedal(HAL_ADC_GetValue(&hadc2));
+  if (hadc==&hadc1){
+	  setPedal(HAL_ADC_GetValue(&hadc1));
 
   }
   /*If continuousconversion mode is DISABLED uncomment below*/
@@ -118,7 +158,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+   HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -143,11 +183,13 @@ int main(void)
   MX_ADC2_Init();
   /* USER CODE BEGIN 2 */
 
-
+  HAL_UART_Transmit_IT(&huart4, datos,8);
+  HAL_UART_Transmit_IT(&huart2, datoss,6);
   HAL_ADC_Start_IT(&hadc1);
   HAL_ADC_Start_IT (&hadc2);
   HAL_TIM_Base_Start_IT(&htim10); //timer para mandar datos
   HAL_TIM_Encoder_Start_IT(&htim2, TIM_CHANNEL_ALL);
+  HAL_UART_Receive_IT(&huart2, data, 1);
 
   /* USER CODE END 2 */
 
@@ -367,17 +409,13 @@ static void MX_TIM1_Init(void)
 
   /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 8399;
+  htim1.Init.Prescaler = 84-1;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 65535;
+  htim1.Init.Period = 100-1;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_OC_Init(&htim1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -398,18 +436,15 @@ static void MX_TIM1_Init(void)
   {
     Error_Handler();
   }
-  sConfigOC.OCMode = TIM_OCMODE_TIMING;
-  if (HAL_TIM_OC_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
   {
     Error_Handler();
   }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
   if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();
   }
-  sConfigOC.OCMode = TIM_OCMODE_TIMING;
-  if (HAL_TIM_OC_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
+  if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
   {
     Error_Handler();
   }

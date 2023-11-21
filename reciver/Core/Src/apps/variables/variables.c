@@ -14,7 +14,8 @@ int volante =0;
 char cambio =0;
 
 void setPedal(int valor){
-	pedal = valor;
+	if(valor>(pedal+10))pedal = valor;
+	if(valor<(pedal-10))pedal = valor;
 }
 int getPedal(){
 	return pedal;
