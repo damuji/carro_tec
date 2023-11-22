@@ -353,7 +353,7 @@ Disassembly of section .text:
 
 08000500 <pid1>:
 int proporcional=0;
-int objetivo =1850;
+int objetivo =1300;
 int milis = 25;
 int total =0;
 void mover();
