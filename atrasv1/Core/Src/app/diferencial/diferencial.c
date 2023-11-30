@@ -23,6 +23,9 @@ void calVelcidad(){ // funcion para ligar la posicion del pedal a una velocidad,
 	int pedal = getPedal();
 	temporal = ((pedal-1000)*1000)/2200;
 	velocidad =  (temporal*5)/10;
+	if (getPedal() < 1100){
+		velocidad =0;
+	}
 }
 void normalizacion();
 
@@ -72,7 +75,8 @@ int caltan(){
 	int an = 0;
 	an = getAngulo();
 	if (an <=0)an *=-1;
-	salida = tabla[180-an];
+
+	if(180-an >=0)salida = tabla[180-an];
 	return salida;
 }
 

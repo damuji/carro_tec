@@ -82,7 +82,7 @@ uint32_t valores[2] = {0,0};
 char flag =1;
 char selecionado =0;
 uint8_t data[10] ;
-
+int a=0;
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart){
 
 	if(huart==&huart4){
@@ -91,7 +91,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart){
 	datos[2] = getPedal() ;
 	datos[3] = getCambio();;
 	datos[4] = (getAngulo() >> 8);
-	datos[5] = (getAngulo() >> 8);
+	datos[5] = getAngulo();
 	datos[6] = 10;
 	datos[7] = 13;
 	HAL_UART_Transmit_IT(&huart4, datos,8);
@@ -125,7 +125,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 }
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim){
-	 setAngulo(__HAL_TIM_GET_COUNTER(htim));
+	 a= __HAL_TIM_GET_COUNTER(htim);
+	 setAngulo(a);
 }
 
 
@@ -158,7 +159,8 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-   HAL_Init();
+
+	HAL_Init();
 
   /* USER CODE BEGIN Init */
 

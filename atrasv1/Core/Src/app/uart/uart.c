@@ -21,6 +21,7 @@ extern char cambio;
 extern UART_HandleTypeDef huart4;
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
+int te =0;
 if (sync == 0){
 	if (data[0] == 10){
 		anterior = 10;
@@ -39,7 +40,13 @@ if (sync == 0){
 	else{
 		setPedal((data[1]<<8)+data[2]);
 		cambio = data[3];
+		te = ((data[4]<<8)+data[5]);
+		if(te <180){
 		setAngulo((data[4]<<8)+data[5]);
+		}
+		else {
+			setAngulo((65535-te)*-1);
+		}
 		sync = 0;
 		HAL_UART_Receive_IT(&huart4, data, 1);
 	}

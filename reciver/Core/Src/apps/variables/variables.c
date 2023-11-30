@@ -6,10 +6,10 @@
  */
 
 #include "variables.h"
-
+#include "stm32f4xx_hal.h"
 
 int pedal =0;
-int angulo =0;
+uint16_t angulo =0;
 int volante =0;
 char cambio =0;
 
@@ -24,7 +24,7 @@ int getPedal(){
 
 
 void setAngulo(int valor){
-	angulo = 239*valor + 796;
+	angulo = (valor+ 796)/239;
 }
 int getAngulo(){
 	return angulo;
@@ -33,7 +33,8 @@ int getAngulo(){
 
 
 void setVolante(int valor){
-	volante = valor;
+	if(valor>(volante+25))volante = valor;
+	if(valor<(volante-25))volante = valor;
 }
 int getVolante(){
 	return volante;
